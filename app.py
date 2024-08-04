@@ -1,6 +1,3 @@
-#INSTALL YT-DLP AND FFMPEG BEFOREHAND
-
-
 import yt_dlp
 import os
 import sys
@@ -22,7 +19,7 @@ def change_download_path(new_download_dir):
     except Exception as e:
         print(f"Error: {str(e)}")
 
-ffmpeg_path = ""
+ffmpeg_path = r"C:\Program Files\ffmpeg\bin\ffmpeg.exe"
 
 def flashlight():
     manual = [
@@ -40,9 +37,13 @@ def get_ydl_opts():
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': '%(title)s.%(ext)s',
         'merge_output_format': 'mp4',
-        'ffmpeg_location': ffmpeg_path
+        'ffmpeg_location': ffmpeg_path,
+        'postprocessors': [{
+            'key': 'FFmpegVideoConvertor',
+            'preferedformat': 'mp4',
+        }],
     }, {
-        'format': 'bestaudio[ext=mp3]/best[ext=m4a]/best',
+        'format': 'bestaudio[ext=mp3]/bestaudio[ext=m4a]/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -51,6 +52,16 @@ def get_ydl_opts():
         'outtmpl': '%(title)s.%(ext)s',
         'ffmpeg_location': ffmpeg_path
     }
+
+def list_formats(url):
+    ydl_opts = {
+        'listformats': True,
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+    except Exception as e:
+        print(f"Error listing formats: {str(e)}")
 
 def download(url):
     format = input("FORMAT? (V/A): ").upper()
@@ -66,6 +77,8 @@ def download(url):
             print("Invalid format. Please enter 'V' for video or 'A' for audio.")
     except Exception as e:
         print(f"Download error: {str(e)}")
+        print("Listing available formats...")
+        list_formats(url)
 
 if not download_dir:
     download_dir = input("Where would you like to save the media from YouTube? ")
